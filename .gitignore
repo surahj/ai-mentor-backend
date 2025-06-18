@@ -1,0 +1,51 @@
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Go build files
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/tmp/
+
+# Go test files
+*.test
+
+# Go coverage files
+*.out
+
+# Go vendor directory
+vendor/
+
+# Go module cache
+go.sum
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Database files (if using local SQLite)
+*.db
+*.sqlite
+*.sqlite3
