@@ -1,0 +1,4 @@
+root = "."
+tmp_dir = "tmp"
+build_cmd = "go build -o ./tmp/api ."
+run_cmd = "./tmp/api"
