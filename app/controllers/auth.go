@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -103,8 +104,9 @@ func (c *Controller) Login(ctx echo.Context) error {
 	}
 
 	if err := ctx.Bind(&loginRequest); err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Invalid request body",
+		return ctx.JSON(http.StatusBadRequest, models.ErrorResponse{
+			ErrorCode:    http.StatusBadRequest,
+			ErrorMessage: err.Error(),
 		})
 	}
 
@@ -124,25 +126,31 @@ func (c *Controller) Login(ctx echo.Context) error {
 
 	var user models.User
 	if err := c.DB.Where("email = ?", loginRequest.Email).First(&user).Error; err != nil {
-		return ctx.JSON(http.StatusUnauthorized, map[string]string{
-			"error": "Invalid credentials",
+		return ctx.JSON(http.StatusUnauthorized, models.ErrorResponse{
+			ErrorCode:    http.StatusUnauthorized,
+			ErrorMessage: "Invalid credentials",
 		})
 	}
 
 	if !utils.CheckPasswordHash(loginRequest.Password, user.Password) {
-		return ctx.JSON(http.StatusUnauthorized, map[string]string{
-			"error": "Invalid credentials",
+		return ctx.JSON(http.StatusUnauthorized, models.ErrorResponse{
+			ErrorCode:    http.StatusUnauthorized,
+			ErrorMessage: "Invalid credentials",
 		})
 	}
 	// Generate JWT token
 	token, err := utils.GenerateJWT(user.ID)
+
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "Failed to generate token",
+		log.Printf("Error generating token: %v", err)
+		return ctx.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			ErrorCode:    http.StatusInternalServerError,
+			ErrorMessage: "Failed to generate token",
 		})
 	}
-	
-	return ctx.JSON(http.StatusOK, map[string]string{
-		"token": token,
+
+	return ctx.JSON(http.StatusOK, models.SuccessResponse{
+		Message: "Login successful",
+		Data:    map[string]string{"token": token},
 	})
 }

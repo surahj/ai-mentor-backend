@@ -23,6 +23,9 @@ services:
       - DB_USER=postgres
       - DB_PASSWORD=postgres
       - DB_NAME=ai-mentor
+      - JWT_SECRET=com.centurylinklabs.watchtower.enable=true
+      - JWT_EXPIRY=300h
+      - OPENAI_API_KEY=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
 
     restart: unless-stopped 
 

@@ -1,38 +1,22 @@
-package middleware
+package library
 
 import (
-	"fmt"
-	"net/http"
-	"os"
-	"strings"
+	"log"
 
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/labstack/echo/v4"
+	"github.com/surahj/ai-mentor-backend/app/database"
+	"github.com/surahj/ai-mentor-backend/app/models"
 )
 
-func AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		authHeader := c.Request().Header.Get("Authorization")
-		if authHeader == "" {
-			return c.JSON(http.StatusUnauthorized, map[string]string{
-				"error": "Authorization header required",
-			})
-		}
-		
-		tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-			}
-			return []byte(os.Getenv("JWT_SECRET")), nil
-		})
+func GetUserByID(userID int64) (models.User, error) {
 
-		if err != nil || !token.Valid {
-			return c.JSON(http.StatusUnauthorized, map[string]string{
-				"error": "Invalid token",
-			})
-		}
+	var user models.User
+	db := database.GetDB()
 
-		return next(c)
+	log.Printf("Getting user by ID: %d", userID)
+
+	if err := db.First(&user, userID).Error; err != nil {
+		return user, err
 	}
+	
+	return user, nil
 }
