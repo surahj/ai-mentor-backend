@@ -1,14 +1,32 @@
 package main
 
 import (
+	"context"
 	"log"
+	"os"
 
-	"github.com/labstack/echo/v4"
-	"github.com/surahj/ai-mentor-backend/database"
-	"github.com/surahj/ai-mentor-backend/routes"
+	"github.com/surahj/ai-mentor-backend/app/database"
+	app "github.com/surahj/ai-mentor-backend/app/router"
+	"github.com/surahj/ai-mentor-backend/docs"
 )
 
 func main() {
+
+	// programmatically set swagger info
+	docs.SwaggerInfo.Title = "ai-mentor Service API"
+	docs.SwaggerInfo.Description = "This API documents exposes all the available API endpoints for AI Mentor service"
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.Host = os.Getenv("BASE_URL")
+	docs.SwaggerInfo.BasePath = "/"
+	docs.SwaggerInfo.Schemes = []string{"https"}
+
+	ctx := context.Background()
+	environment := os.Getenv("ENV")
+	if environment == "" {
+		environment = "dev"
+	}
+
+	router := &app.App{}
 
 	// Initialize database
 	db, err := database.InitPostgres()
@@ -16,12 +34,7 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	// Initialize Echo
-	e := echo.New()
+	router.Initialize(ctx, db)
 
-	// Setup routes
-	routes.SetupRoutes(e, db)
-
-	// Start server
-	e.Logger.Fatal(e.Start(":8080"))
+	router.Run()
 }

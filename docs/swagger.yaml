@@ -1,0 +1,98 @@
+definitions:
+  models.CreateUserRequest:
+    properties:
+      daily_commitment:
+        type: integer
+      email:
+        type: string
+      learning_goal:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - daily_commitment
+    - email
+    - learning_goal
+    - name
+    - password
+    type: object
+  models.ErrorResponse:
+    properties:
+      error_code:
+        type: integer
+      error_message:
+        type: string
+    required:
+    - error_code
+    - error_message
+    type: object
+  models.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      status:
+        type: integer
+    required:
+    - message
+    - status
+    type: object
+  models.UserResponse:
+    properties:
+      created_at:
+        type: string
+      daily_commitment:
+        type: integer
+      email:
+        type: string
+      id:
+        type: integer
+      learning_goal:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /signup:
+    post:
+      consumes:
+      - application/json
+      description: This API will attempt to create a new user
+      parameters:
+      - description: User Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created, OTP was send, show the verification page
+          schema:
+            $ref: '#/definitions/models.SuccessResponse'
+        "202":
+          description: Status 202 will be returned if the signup was successfully,
+            DONT show verification page
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Sign Up
+      tags:
+      - Authentication
+swagger: "2.0"
