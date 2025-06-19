@@ -33,6 +33,8 @@ func InitPostgres() (*gorm.DB, error) {
 	// Auto migrate models
 	err = db.AutoMigrate(
 		&models.User{},
+		&models.Session{},
+		&models.Goal{}, // Add this line
 	)
 	if err != nil {
 		return nil, err
