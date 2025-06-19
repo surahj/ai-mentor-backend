@@ -7,6 +7,13 @@ RUN go mod download
 
 
 COPY . .
+
+# Install Swag CLI for generating API documentation
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+
+# Generate Swagger API documentation
+RUN swag init
+
 RUN go mod vendor
 
 RUN go build -o /api

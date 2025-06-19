@@ -10,11 +10,11 @@ services:
     networks:
       - ai-mentor
     ports:
-      - "8080:8080"
+      - 2008:80 # http port
     extra_hosts:
       - "host.docker.internal:host-gateway"
     expose:
-      - 8080
+      - 80
     # depends_on:
     #   - db
     environment:
