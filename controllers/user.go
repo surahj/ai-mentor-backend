@@ -17,16 +17,24 @@ func NewUserController(db *gorm.DB) *UserController {
 	return &UserController{db: db}
 }
 
-func (c *UserController) Register(ctx echo.Context) error {
-	var user models.User
-	if err := ctx.Bind(&user); err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Invalid request body",
-		})
+type RegisterInput struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (uc *UserController) Register(c echo.Context) error {
+	var input RegisterInput
+	if err := c.Bind(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid input"})
+	}
+
+	// Make sure email is not empty
+	if input.Email == "" {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Email is required"})
 	}
 
 	// Hash password
-	hashedPassword, err := utils.HashPassword(user.Password)
+	hashedPassword, err := utils.HashPassword(input.Password)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "Failed to process password",
@@ -77,5 +85,23 @@ func (c *UserController) Login(ctx echo.Context) error {
 	}
 	return ctx.JSON(http.StatusOK, map[string]string{
 		"token": token,
+	})
+}
+
+func (uc *UserController) Profile(c echo.Context) error {
+	userID := c.Get("user_id")
+	if userID == nil {
+		return c.JSON(http.StatusUnauthorized, echo.Map{"error": "Unauthorized"})
+	}
+
+	var user models.User
+	if err := uc.db.First(&user, userID).Error; err != nil {
+		return c.JSON(http.StatusNotFound, echo.Map{"error": "User not found"})
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"id":    user.ID,
+		"email": user.Email,
+		// Add other fields as needed
 	})
 }
