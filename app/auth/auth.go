@@ -13,12 +13,12 @@ import (
 	"github.com/surahj/ai-mentor-backend/app/models"
 )
 
-func AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func Authenticate(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		authHeader := c.Request().Header.Get("Authorization")
 		if authHeader == "" {
 			return c.JSON(http.StatusUnauthorized, map[string]string{
-				"error": "Authorization header required",
+				"error": "Unauthorized",
 			})
 		}
 
@@ -38,7 +38,6 @@ func AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			})
 		}
 
-		log.Printf("User ID: %d", 222222)
 		userIDFloat, ok := claims["user_id"].(float64)
 		if !ok {
 			return c.JSON(http.StatusUnauthorized, models.ErrorResponse{
@@ -56,7 +55,6 @@ func AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		c.Set("user_id", userID)
 
 		log.Printf("User ID: %d", userID)
-
 
 		_, err = library.GetUserByID(userID)
 

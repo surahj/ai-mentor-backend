@@ -45,6 +45,9 @@ func InitPostgres() (*gorm.DB, error) {
 	err = db.AutoMigrate(
 		&models.User{},
 		&models.LearningPlanStructure{},
+		&models.GeneratedWeeklyContent{},
+		&models.DailyContent{},
+		// &models.ContentAdaptationFlag{},
 	)
 	if err != nil {
 		return nil, err

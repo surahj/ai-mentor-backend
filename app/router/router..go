@@ -93,10 +93,13 @@ func (a *App) setRouters() {
 	a.E.GET("/docs/*", echoSwagger.WrapHandler)
 
 	// Learning Plan Structure routes (protected)
-	a.E.POST("/learning-plan/structure", auth.AuthMiddleware(a.GeneratePlanStructure))
-	a.E.GET("/learning-plan/structure/:id", auth.AuthMiddleware(a.GetPlanStructure))
-	a.E.POST("/learning-plan/content", auth.AuthMiddleware(a.GenerateWeekContent))
-	a.E.GET("/learning-plan/content/:plan_id/:week_number", auth.AuthMiddleware(a.GetWeekContent))
+	a.E.POST("/learnings/structure", auth.Authenticate(a.GeneratePlanStructure))
+	a.E.GET("/learnings/structure/:id", auth.Authenticate(a.GetPlanStructure))
+	a.E.POST("/learnings/weekly-content", auth.Authenticate(a.GenerateWeekContent))
+	a.E.GET("/learnings/weekly-content/:week_number/:plan_id", auth.Authenticate(a.GetWeekContent))
+	a.E.GET("/learnings", auth.Authenticate(a.GetLearnings))
+	a.E.GET("/learnings/daily-content/:day_number/:week_number/:plan_id", auth.Authenticate(a.GetDailyContent))
+	a.E.GET("/learnings/daily-content/:day_number/:week_number/:plan_id/exercises", auth.Authenticate(a.GenerateDailyExercises))
 
 	//status
 	a.E.POST("/", a.GetStatus)
