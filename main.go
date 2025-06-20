@@ -5,12 +5,18 @@ import (
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/surahj/ai-mentor-backend/app/database"
 	app "github.com/surahj/ai-mentor-backend/app/router"
 	"github.com/surahj/ai-mentor-backend/docs"
 )
 
 func main() {
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("No .env file found or error loading .env file")
+	}
 
 	// programmatically set swagger info
 	docs.SwaggerInfo.Title = "ai-mentor Service API"

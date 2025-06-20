@@ -6,6 +6,7 @@ toolchain go1.23.2
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/sashabaranov/go-openai v1.40.2
 	github.com/spf13/viper v1.18.2
