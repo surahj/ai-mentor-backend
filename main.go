@@ -36,6 +36,7 @@ func main() {
 
 	// Initialize database
 	db, err := database.InitPostgres()
+
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}

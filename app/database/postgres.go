@@ -3,13 +3,20 @@ package database
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/surahj/ai-mentor-backend/app/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
+var dbInstance *gorm.DB
+
 func InitPostgres() (*gorm.DB, error) {
+	if dbInstance != nil {
+		return dbInstance, nil
+	}
+
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
 	dbUser := os.Getenv("DB_USER")
@@ -20,7 +27,16 @@ func InitPostgres() (*gorm.DB, error) {
 		dbHost, dbPort, dbUser, dbPassword, dbName,
 	)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	var db *gorm.DB
+	var err error
+	maxRetries := 3
+	for i := 0; i < maxRetries; i++ {
+		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		if err == nil {
+			break
+		}
+		time.Sleep(2 * time.Second)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -28,10 +44,19 @@ func InitPostgres() (*gorm.DB, error) {
 	// Auto migrate models
 	err = db.AutoMigrate(
 		&models.User{},
+		&models.LearningPlanStructure{},
+		&models.GeneratedWeeklyContent{},
+		&models.DailyContent{},
+		// &models.ContentAdaptationFlag{},
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	return db, nil
+	dbInstance = db
+	return dbInstance, nil
+}
+
+func GetDB() *gorm.DB {
+	return dbInstance
 }
