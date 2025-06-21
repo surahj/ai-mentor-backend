@@ -81,27 +81,37 @@ func (c *Controller) Register(ctx echo.Context) error {
 		})
 	}
 
-	// Create response
-	resp := models.UserResponse{
-		ID:              user.ID,
-		Email:           user.Email,
-		FirstName:       *user.FirstName,
-		LastName:        *user.LastName,
-		DailyCommitment: user.DailyCommitment,
-		LearningGoal:    user.LearningGoal,
+	// Generate JWT token
+	token, err := utils.GenerateJWT(user.ID)
+	if err != nil {
+		log.Printf("Error generating token: %v", err)
+		return ctx.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			ErrorCode:    http.StatusInternalServerError,
+			ErrorMessage: "Failed to generate token",
+		})
+	}
+
+	// Create user response data with token
+	userData := map[string]interface{}{
+		"token": token,
+		"user": map[string]interface{}{
+			"id":               user.ID,
+			"email":            user.Email,
+			"first_name":       *user.FirstName,
+			"last_name":        *user.LastName,
+			"daily_commitment": user.DailyCommitment,
+			"learning_goal":    user.LearningGoal,
+		},
 	}
 
 	return ctx.JSON(http.StatusCreated, models.SuccessResponse{
 		Message: "User created successfully",
-		Data:    resp,
+		Data:    userData,
 	})
 }
 
 func (c *Controller) Login(ctx echo.Context) error {
-	var loginRequest struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
+	var loginRequest models.LoginRequest
 
 	if err := ctx.Bind(&loginRequest); err != nil {
 		return ctx.JSON(http.StatusBadRequest, models.ErrorResponse{
@@ -149,8 +159,21 @@ func (c *Controller) Login(ctx echo.Context) error {
 		})
 	}
 
+	// Create user response data
+	userData := map[string]interface{}{
+		"token": token,
+		"user": map[string]interface{}{
+			"id":               user.ID,
+			"email":            user.Email,
+			"first_name":       *user.FirstName,
+			"last_name":        *user.LastName,
+			"daily_commitment": user.DailyCommitment,
+			"learning_goal":    user.LearningGoal,
+		},
+	}
+
 	return ctx.JSON(http.StatusOK, models.SuccessResponse{
 		Message: "Login successful",
-		Data:    map[string]string{"token": token},
+		Data:    userData,
 	})
 }

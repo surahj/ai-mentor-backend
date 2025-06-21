@@ -1,13 +1,34 @@
 definitions:
+  controllers.ContentRequest:
+    properties:
+      plan_id:
+        type: integer
+      user_progress:
+        additionalProperties: true
+        type: object
+      week_number:
+        type: integer
+    type: object
+  controllers.StructureRequest:
+    properties:
+      daily_commitment:
+        type: integer
+      goal:
+        type: string
+      total_weeks:
+        type: integer
+    type: object
   models.CreateUserRequest:
     properties:
       daily_commitment:
         type: integer
       email:
         type: string
-      learning_goal:
+      first_name:
         type: string
-      name:
+      last_name:
+        type: string
+      learning_goal:
         type: string
       password:
         minLength: 8
@@ -15,8 +36,9 @@ definitions:
     required:
     - daily_commitment
     - email
+    - first_name
+    - last_name
     - learning_goal
-    - name
     - password
     type: object
   models.ErrorResponse:
@@ -28,6 +50,58 @@ definitions:
     required:
     - error_code
     - error_message
+    type: object
+  models.GeneratedWeeklyContent:
+    properties:
+      content_data:
+        description: 'JSONB: stores int64'
+        type: object
+      created_at:
+        type: string
+      generated_based_on:
+        description: 'JSONB: snapshot of user progress'
+        type: object
+      id:
+        example: 1
+        type: integer
+      plan_id:
+        description: FK to LearningPlanStructure
+        example: 1
+        type: integer
+      user_id:
+        example: 1
+        type: integer
+      week_number:
+        example: 1
+        type: integer
+    type: object
+  models.LearningPlanStructure:
+    properties:
+      createdAt:
+        type: string
+      goal:
+        example: Learn React and TypeScript
+        type: string
+      id:
+        type: integer
+      structure:
+        description: 'JSONB: stores the complete structure'
+        type: object
+      total_weeks:
+        example: 8
+        type: integer
+      updatedAt:
+        type: string
+      user_id:
+        example: 1
+        type: integer
+    type: object
+  models.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
     type: object
   models.SuccessResponse:
     properties:
@@ -48,11 +122,13 @@ definitions:
         type: integer
       email:
         type: string
+      first_name:
+        type: string
       id:
         type: integer
-      learning_goal:
+      last_name:
         type: string
-      name:
+      learning_goal:
         type: string
       updated_at:
         type: string
@@ -60,6 +136,174 @@ definitions:
 info:
   contact: {}
 paths:
+  /learnings:
+    get:
+      description: Retrieve all learning plans for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get My Learning Plans
+      tags:
+      - LearningPlan
+  /learnings/daily-content/{day_number}/{week_number}/{plan_id}:
+    get:
+      responses: {}
+  /learnings/daily-content/{day_number}/{week_number}/{plan_id}/exercises:
+    get:
+      responses: {}
+  /learnings/structure:
+    post:
+      consumes:
+      - application/json
+      description: Generate and store a high-level learning plan structure for a user
+      parameters:
+      - description: Learning Plan Structure Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.StructureRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LearningPlanStructure'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Generate Plan Structure
+      tags:
+      - LearningPlan
+  /learnings/structure/{id}:
+    get:
+      description: Retrieve a learning plan structure by ID
+      parameters:
+      - description: Plan Structure ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.LearningPlanStructure'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get Plan Structure
+      tags:
+      - LearningPlan
+  /learnings/weekly-content:
+    post:
+      consumes:
+      - application/json
+      description: Generate and store detailed weekly content for a learning plan
+      parameters:
+      - description: Weekly Content Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.ContentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GeneratedWeeklyContent'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Generate Week Content
+      tags:
+      - LearningPlan
+  /learnings/weekly-content/{week_number}/{plan_id}:
+    get:
+      description: Retrieve generated content for a specific week of a learning plan
+      parameters:
+      - description: Plan ID
+        in: path
+        name: plan_id
+        required: true
+        type: integer
+      - description: Week Number
+        in: path
+        name: week_number
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GeneratedWeeklyContent'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get Week Content
+      tags:
+      - LearningPlan
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: This API will attempt to login a user
+      parameters:
+      - description: User Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Status 200 will be returned if the login was successfully
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Login
+      tags:
+      - Authentication
   /signup:
     post:
       consumes:
