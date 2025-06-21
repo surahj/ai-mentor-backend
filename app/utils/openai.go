@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -93,36 +94,9 @@ func GenerateWeeklyContent(goal string, weekNumber int, userProgress map[string]
 		return nil, err
 	}
 
-	progressJSON, _ := json.Marshal(userProgress)
-
-	prompt := `Generate detailed content for Week ` + strconv.Itoa(weekNumber) + ` of learning goal: ` + goal + `
-	
-	User's current progress: ` + string(progressJSON) + `
-	
-	Return a JSON object with the following structure:
-	{
-		"week_number": number,
-		"theme": {
-			"week_number": number,
-			"theme": "string",
-			"objectives": ["string"],
-			"key_concepts": ["string"],
-			"prerequisites": ["string"]
-		},
-		"daily_milestones": [
-			{
-				"day_number": number,
-				"topic": "string",
-				"description": "string",
-				"duration_minutes": number,
-				"difficulty": "string"
-			}
-		],
-		"adaptive_notes": "string"
-	}
-	
-	Adapt the content based on user progress and make it engaging.
-	Always provide 5 or more exercises and resources.`
+	prompt := "Generate a detailed weekly learning content for week " + strconv.Itoa(weekNumber) + " of " + goal +
+		". User progress: " + toJSONString(userProgress) +
+		". Return a JSON object with fields: theme (string), objectives (array of strings), key_concepts (array of strings), prerequisites (array of strings), daily_milestones (array of objects with day_number (integer), topic (string), description (string), duration_minutes (integer), difficulty (string)), and adaptive_notes (string)."
 
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
@@ -139,11 +113,56 @@ func GenerateWeeklyContent(goal string, weekNumber int, userProgress map[string]
 	}
 
 	var content models.WeeklyContent
-	if err := json.Unmarshal([]byte(resp.Choices[0].Message.Content), &content); err != nil {
-		return nil, errors.New("failed to parse OpenAI response as JSON: " + err.Error())
+	err = json.Unmarshal([]byte(resp.Choices[0].Message.Content), &content)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse OpenAI response: %w", err)
 	}
 
 	return &content, nil
+}
+
+// ValidateLearningGoal validates the user's learning goal
+func ValidateLearningGoal(goal string) (bool, string, error) {
+	client, err := getOpenAIClient()
+	if err != nil {
+		return false, "", err
+	}
+
+	prompt := fmt.Sprintf(`You are a learning plan validator. A user has provided the following learning goal: "%s".
+Your task is to determine if this is an appropriate and specific enough goal for creating a technical or academic learning plan.
+The goal should not be offensive, irrelevant, or overly broad (e.g., 'learn everything').
+Respond with a JSON object containing two fields: 'appropriate' (boolean) and 'reason' (a brief string explaining your decision).
+For example: {"appropriate": true, "reason": "This is a valid technical learning goal."} or {"appropriate": false, "reason": "The goal is too vague. Please be more specific."}`, goal)
+
+	resp, err := client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: openai.GPT3Dot5Turbo,
+			Messages: []openai.ChatCompletionMessage{
+				{Role: openai.ChatMessageRoleSystem, Content: "You are an expert learning validator that always returns JSON."},
+				{Role: openai.ChatMessageRoleUser, Content: prompt},
+			},
+			ResponseFormat: &openai.ChatCompletionResponseFormat{
+				Type: openai.ChatCompletionResponseFormatTypeJSONObject,
+			},
+		},
+	)
+
+	if err != nil {
+		return false, "", fmt.Errorf("failed to get response from OpenAI: %w", err)
+	}
+
+	var validationResponse struct {
+		Appropriate bool   `json:"appropriate"`
+		Reason      string `json:"reason"`
+	}
+
+	err = json.Unmarshal([]byte(resp.Choices[0].Message.Content), &validationResponse)
+	if err != nil {
+		return false, "", fmt.Errorf("failed to parse OpenAI response: %w", err)
+	}
+
+	return validationResponse.Appropriate, validationResponse.Reason, nil
 }
 
 // Legacy function for backward compatibility
@@ -181,8 +200,7 @@ func GenerateDailyContent(goal string, dailyStructure string, week int, day int,
 		strconv.Itoa(week) + ", day " + strconv.Itoa(day) + " for goal: " + goal +
 		". User progress: " + toJSONString(userProgress) +
 		". Return a JSON object with fields: title, summary, key_points, explanation." +
-		". The explanation property should an html formatted detailed explanation of the lesson contents." +
-		". You should serach the internet for the best resources to use in the explanation."
+		". The explanation property should be a well-formatted HTML string. Use paragraphs, lists with headings, and bold and italic tags to make the content easy to read and understand. For code snippets, wrap them in <pre><code>...</code></pre> tags. Ensure there is good spacing and line breaks between different sections."
 
 	lessonResp, err := client.CreateChatCompletion(context.Background(), openai.ChatCompletionRequest{
 		Model: openai.GPT4,

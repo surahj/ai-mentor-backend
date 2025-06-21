@@ -28,13 +28,27 @@ func (a *App) GetPlanStructure(c echo.Context) error {
 	return a.Controller.GetPlanStructure(c)
 }
 
+// @Summary Validate Learning Goal
+// @Description Validate if a learning goal is appropriate for plan generation
+// @Tags LearningPlan
+// @Param request body controllers.ValidateGoalRequest true "Goal Validation Request"
+// @Accept json
+// @Produce json
+// @Success 200 {object} controllers.ValidateGoalResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /learnings/validate-goal [post]
+func (a *App) ValidateGoal(c echo.Context) error {
+	return a.Controller.ValidateGoal(c)
+}
+
 // @Summary Generate Week Content
 // @Description Generate and store detailed weekly content for a learning plan
 // @Tags LearningPlan
 // @Param request body controllers.ContentRequest true "Weekly Content Request"
 // @Accept json
 // @Produce json
-// @Success 200 {object} models.GeneratedContent
+// @Success 200 {object} models.GeneratedWeeklyContent
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Router /learnings/weekly-content [post]
@@ -48,7 +62,7 @@ func (a *App) GenerateWeekContent(c echo.Context) error {
 // @Param plan_id path int true "Plan ID"
 // @Param week_number path int true "Week Number"
 // @Produce json
-// @Success 200 {object} models.GeneratedContent
+// @Success 200 {object} models.GeneratedWeeklyContent
 // @Failure 404 {object} models.ErrorResponse
 // @Router /learnings/weekly-content/{week_number}/{plan_id} [get]
 func (a *App) GetWeekContent(c echo.Context) error {
@@ -95,4 +109,18 @@ func (a *App) GetDailyContent(c echo.Context) error {
 // @Router /learnings/daily-content/{day_number}/{week_number}/{plan_id}/exercises [get]
 func (a *App) GenerateDailyExercises(c echo.Context) error {
 	return a.Controller.GenerateDailyExercises(c)
+}
+
+// @Summary Delete Learning Plan
+// @Description Delete a learning plan and all its associated data
+// @Tags LearningPlan
+// @Param id path int true "Plan ID"
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Failure 401 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /learnings/plan/{id} [delete]
+func (a *App) DeletePlan(c echo.Context) error {
+	return a.Controller.DeletePlan(c)
 }

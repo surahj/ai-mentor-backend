@@ -15,6 +15,263 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/learnings": {
+            "get": {
+                "description": "Retrieve all learning plans for the authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "LearningPlan"
+                ],
+                "summary": "Get My Learning Plans",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/learnings/daily-content/{day_number}/{week_number}/{plan_id}": {
+            "get": {
+                "responses": {}
+            }
+        },
+        "/learnings/daily-content/{day_number}/{week_number}/{plan_id}/exercises": {
+            "get": {
+                "responses": {}
+            }
+        },
+        "/learnings/structure": {
+            "post": {
+                "description": "Generate and store a high-level learning plan structure for a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "LearningPlan"
+                ],
+                "summary": "Generate Plan Structure",
+                "parameters": [
+                    {
+                        "description": "Learning Plan Structure Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.StructureRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LearningPlanStructure"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/learnings/structure/{id}": {
+            "get": {
+                "description": "Retrieve a learning plan structure by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "LearningPlan"
+                ],
+                "summary": "Get Plan Structure",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Plan Structure ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.LearningPlanStructure"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/learnings/weekly-content": {
+            "post": {
+                "description": "Generate and store detailed weekly content for a learning plan",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "LearningPlan"
+                ],
+                "summary": "Generate Week Content",
+                "parameters": [
+                    {
+                        "description": "Weekly Content Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.ContentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GeneratedWeeklyContent"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/learnings/weekly-content/{week_number}/{plan_id}": {
+            "get": {
+                "description": "Retrieve generated content for a specific week of a learning plan",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "LearningPlan"
+                ],
+                "summary": "Get Week Content",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Plan ID",
+                        "name": "plan_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Week Number",
+                        "name": "week_number",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GeneratedWeeklyContent"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "description": "This API will attempt to login a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login",
+                "parameters": [
+                    {
+                        "description": "User Details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status 200 will be returned if the login was successfully",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/signup": {
             "post": {
                 "description": "This API will attempt to create a new user",
@@ -69,13 +326,43 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "controllers.ContentRequest": {
+            "type": "object",
+            "properties": {
+                "plan_id": {
+                    "type": "integer"
+                },
+                "user_progress": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "week_number": {
+                    "type": "integer"
+                }
+            }
+        },
+        "controllers.StructureRequest": {
+            "type": "object",
+            "properties": {
+                "daily_commitment": {
+                    "type": "integer"
+                },
+                "goal": {
+                    "type": "string"
+                },
+                "total_weeks": {
+                    "type": "integer"
+                }
+            }
+        },
         "models.CreateUserRequest": {
             "type": "object",
             "required": [
                 "daily_commitment",
                 "email",
+                "first_name",
+                "last_name",
                 "learning_goal",
-                "name",
                 "password"
             ],
             "properties": {
@@ -85,10 +372,13 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "learning_goal": {
+                "first_name": {
                     "type": "string"
                 },
-                "name": {
+                "last_name": {
+                    "type": "string"
+                },
+                "learning_goal": {
                     "type": "string"
                 },
                 "password": {
@@ -108,6 +398,80 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "error_message": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GeneratedWeeklyContent": {
+            "type": "object",
+            "properties": {
+                "content_data": {
+                    "description": "JSONB: stores int64",
+                    "type": "object"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "generated_based_on": {
+                    "description": "JSONB: snapshot of user progress",
+                    "type": "object"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "plan_id": {
+                    "description": "FK to LearningPlanStructure",
+                    "type": "integer",
+                    "example": 1
+                },
+                "user_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "week_number": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "models.LearningPlanStructure": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "goal": {
+                    "type": "string",
+                    "example": "Learn React and TypeScript"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "structure": {
+                    "description": "JSONB: stores the complete structure",
+                    "type": "object"
+                },
+                "total_weeks": {
+                    "type": "integer",
+                    "example": 8
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "models.LoginRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
                     "type": "string"
                 }
             }
@@ -140,13 +504,16 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "first_name": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
-                "learning_goal": {
+                "last_name": {
                     "type": "string"
                 },
-                "name": {
+                "learning_goal": {
                     "type": "string"
                 },
                 "updated_at": {

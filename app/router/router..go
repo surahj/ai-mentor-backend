@@ -101,6 +101,9 @@ func (a *App) setRouters() {
 	a.E.GET("/learnings/daily-content/:day_number/:week_number/:plan_id", auth.Authenticate(a.GetDailyContent))
 	a.E.GET("/learnings/daily-content/:day_number/:week_number/:plan_id/exercises", auth.Authenticate(a.GenerateDailyExercises))
 
+	a.E.POST("/learnings/validate-goal", auth.Authenticate(a.ValidateGoal))
+	a.E.DELETE("/learnings/plan/:id", auth.Authenticate(a.DeletePlan))
+
 	//status
 	a.E.POST("/", a.GetStatus)
 	a.E.GET("/", a.GetStatus)
