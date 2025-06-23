@@ -19,9 +19,13 @@ func Load() (*Config, error) {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("./configs")
+	viper.AutomaticEnv() // Read from environment variables
 
 	if err := viper.ReadInConfig(); err != nil {
-		return nil, err
+		// It's okay if the config file doesn't exist, we can rely on env vars
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return nil, err
+		}
 	}
 
 	var config Config
