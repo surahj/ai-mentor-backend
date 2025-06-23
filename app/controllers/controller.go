@@ -1,7 +1,13 @@
 package controllers
 
-import "gorm.io/gorm"
+import (
+	"github.com/surahj/ai-mentor-backend/app/configs"
+	"github.com/surahj/ai-mentor-backend/app/services"
+	"gorm.io/gorm"
+)
 
 type Controller struct {
-	DB *gorm.DB
+	DB          *gorm.DB
+	EmailClient services.EmailServiceProvider
+	Config      *configs.Config
 }
